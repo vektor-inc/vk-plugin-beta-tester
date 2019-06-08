@@ -1,0 +1,23 @@
+{
+  "name": "vk-plugin-beta-tester",
+  "version": "1.0.0",
+  "description": "=== VK Plugin Beta Tester === Contributors: vektor-inc,kurudrive,naoki0h Donate link: Tags: beta, advanced, testing, plugins, plugin Tested up to: Requires at least: Stable Tag: 0.1.0 Requires PHP: 5.6.0 License: GPLv2 or later License URI: https://www.gnu.org/licenses/gpl-2.0.html",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vektor-inc/vk-plugin-beta-tester.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vektor-inc/vk-plugin-beta-tester/issues"
+  },
+  "homepage": "https://github.com/vektor-inc/vk-plugin-beta-tester#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "run-sequence": "^2.2.1"
+  }
+}
