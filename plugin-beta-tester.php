@@ -243,9 +243,33 @@ class Plugin_Beta_Tester {
 		register_rest_route( 'vkpluginbetatester/v1', '/upgradeplugins', array(
 			'methods'  => 'GET',
 			'callback' => function () {
-				wp_update_plugins();
 
-				return rest_ensure_response( true );
+//				$timeout = 30;
+//				$to_send = compact( 'plugins', 'active' );
+//				$translations = wp_get_installed_translations( 'plugins' );
+//				$locales = array_values( get_available_languages() );
+//
+//				$options = array(
+//					'timeout'    => $timeout,
+//					'body'       => array(
+//						'plugins'      => wp_json_encode( $to_send ),
+//						'translations' => wp_json_encode( $translations ),
+//						'locale'       => wp_json_encode( $locales ),
+//						'all'          => wp_json_encode( true ),
+//					),
+//					'user-agent' => 'WordPress/' . '5.2.2' . '; ' . home_url( '/' ),
+//				);
+//
+//				$url = $http_url = 'http://api.wordpress.org/plugins/update-check/1.1/';
+//				if ( $ssl = wp_http_supports( array( 'ssl' ) ) ) {
+//					$url = set_url_scheme( $url, 'https' );
+//				}
+//				$raw_response = wp_remote_post( $url, $options );
+//				if(empty($raw_response)){
+					$raw_response ='nothing';
+//				}
+//				wp_update_plugins();
+				return rest_ensure_response( $raw_response );
 			},
 		) );
 	}
