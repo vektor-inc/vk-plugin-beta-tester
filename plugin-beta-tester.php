@@ -8,7 +8,9 @@
 * Text Domain: vk-plugin-beta-tester
 * Author URI: https://vektor-inc.co.jp
 */
+//wp_update_plugins();
 
+define( 'PLUGIN_FILE', 'vk-plugin-beta-tester/plugin-beta-tester.php' );
 define( 'PLUGIN_BETA_TESTER_VERSION', '0.5' );
 if ( ! defined( 'PLUGIN_BETA_TESTER_EXPIRATION' ) ) {
 	define( 'PLUGIN_BETA_TESTER_EXPIRATION', 60 * 60 * 24 );
@@ -18,6 +20,17 @@ class Plugin_Beta_Tester {
 	private $api_cache = array();
 
 	function __construct() {
+
+		add_action( 'wp_enqueue_scripts', function () {
+
+			wp_localize_script( 'wp-api', 'wpApiSettings', array(
+				'root'  => esc_url_raw( rest_url() ),
+				'nonce' => wp_create_nonce( 'wp_rest' )
+			) );
+			wp_enqueue_script( 'wp-api' );
+
+		} );
+
 		// add "stable" + "beta" markers to the version numbers on the plugins page
 		add_filter( 'plugin_row_meta', array( $this, 'meta_filter' ), 10, 4 );
 
@@ -26,6 +39,11 @@ class Plugin_Beta_Tester {
 
 		// hijack the upgrades response from wordpress.org
 		add_filter( 'http_response', array( $this, 'http_filter' ), 10, 3 );
+
+		add_filter( 'plugin_row_meta', array( $this, 'add_update_link_to_plugins_row' ), 10, 4 );
+
+		add_action( 'rest_api_init', array( $this, 'register_custom_endpoints' ), 10, 0 );
+
 	}
 
 	function reset_transient() {
@@ -34,6 +52,7 @@ class Plugin_Beta_Tester {
 
 	// This is how we hijack the upgrade info from wordpress.org
 	function http_filter( $response, $r, $url ) {
+
 		if ( $url == 'http://api.wordpress.org/plugins/update-check/1.0/' ) {
 			$wpapi_response   = unserialize( $response['body'] );
 			$response['body'] = serialize( $this->upgradable( $wpapi_response ) );
@@ -196,6 +215,40 @@ class Plugin_Beta_Tester {
 		return $api;
 	}
 	*/
+
+	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
+
+		if ( PLUGIN_FILE === $plugin_file ) {
+			$new_content = '<script>';
+			$new_content .= 'function checkPluginUpdate(){';
+			$new_content .= '$.ajax( {';
+			$new_content .= 'url: wpApiSettings.root + "vkpluginbetatester/v1/upgradeplugins",';
+			$new_content .= 'method: "GET",';
+			$new_content .= 'beforeSend: function ( xhr ) {';
+			$new_content .= 'xhr.setRequestHeader( "X-WP-Nonce", wpApiSettings.nonce );';
+			$new_content .= '},';
+			$new_content .= '} ).done( function ( response ) {';
+			$new_content .= 'console.log( response );';
+			$new_content .= '} );';
+			$new_content .= '};';
+			$new_content .= '</script>';
+			$new_content .= '<a onclick="checkPluginUpdate()" style="cursor: pointer;">' . __( 'Check for updates', 'vk-plugin-beta-tester' ) . '</a>';
+			array_push( $plugin_meta, $new_content );
+		}
+
+		return $plugin_meta;
+	}
+
+	function register_custom_endpoints() {
+		register_rest_route( 'vkpluginbetatester/v1', '/upgradeplugins', array(
+			'methods'  => 'GET',
+			'callback' => function () {
+				wp_update_plugins();
+
+				return rest_ensure_response( true );
+			},
+		) );
+	}
 }
 
 $plugin_beta_tester = new Plugin_Beta_Tester;
