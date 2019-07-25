@@ -181,7 +181,6 @@ class Plugin_Beta_Tester {
 				'latest' => $versions[0],
 				'stable' => $api->version,
 			);
-
 			set_site_transient( 'pbt_' . md5( $slug ), $versions_info, PLUGIN_BETA_TESTER_EXPIRATION );
 
 			return $versions_info;
@@ -253,6 +252,7 @@ class Plugin_Beta_Tester {
 
 	function my_action() {
 
+		delete_site_transient( 'update_plugins' ); // force an update
 		echo wp_update_plugins();
 
 		wp_die(); // this is required to terminate immediately and return a proper response
