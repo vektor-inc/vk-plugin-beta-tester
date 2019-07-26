@@ -82,6 +82,7 @@ class Plugin_Beta_Tester {
 		$upgrades = array();
 		foreach ( $plugins as $file => $plugin ) {
 			$slug = $this->get_plugin_slug( $file, $plugin );
+
 			if ( ! $slug ) {
 				continue;
 			}
@@ -128,6 +129,7 @@ class Plugin_Beta_Tester {
 		}
 	}
 	function meta_filter( $plugin_meta, $plugin_file, $plugin_data, $context ) {
+
 		$slug = $this->get_plugin_slug( $plugin_file, $plugin_data );
 
 		if ( ! $slug ) {
@@ -181,6 +183,7 @@ class Plugin_Beta_Tester {
 				'latest' => $versions[0],
 				'stable' => $api->version,
 			);
+
 			set_site_transient( 'pbt_' . md5( $slug ), $versions_info, PLUGIN_BETA_TESTER_EXPIRATION );
 
 			return $versions_info;
@@ -226,36 +229,30 @@ class Plugin_Beta_Tester {
 		$new_content .= 'jQuery(document).ready(function($) {';
 		$new_content .= 'var data = {';
 		$new_content .= '"action": "my_action",';
-		$new_content .= '"whatever": 1234';
 		$new_content .= '};';
 		$new_content .= 'jQuery.post(ajaxurl, data, function(response) {';
-		$new_content .= 'alert("Got this from the server: " + response);';
+		$new_content .= 'console.log("Response: " + response);';
+		$new_content .= 'location.reload(true);';
 		$new_content .= '});';
 		$new_content .= '});';
 		$new_content .= '}';
 		$new_content .= '</script>';
-
-//		$new_content .= 'function checkPluginUpdate(){';
-//		$new_content .= '$.ajax( {';
-//		$new_content .= 'url: wpApiSettings.root + "vkpluginbetatester/v1/upgradeplugins",';
-//		$new_content .= 'method: "GET",';
-//		$new_content .= 'beforeSend: function ( xhr ) {';
-//		$new_content .= 'xhr.setRequestHeader( "X-WP-Nonce", wpApiSettings.nonce );';
-//		$new_content .= '},';
-//		$new_content .= '} ).done( function ( response ) {';
-//		$new_content .= 'console.log( response );';
-//		$new_content .= '} );';
-//		$new_content .= '};';
-
 		echo $new_content;
 	}
 
 	function my_action() {
-
 		delete_site_transient( 'update_plugins' ); // force an update
-		echo wp_update_plugins();
+		Plugin_Beta_Tester::reset_custom_site_transient();
+		wp_update_plugins();
+		wp_die();
+	}
 
-		wp_die(); // this is required to terminate immediately and return a proper response
+	static function reset_custom_site_transient() {
+
+		$plugins = get_plugins();
+		foreach ( $plugins as $plugin ) {
+			delete_site_transient( 'pbt_' . md5( $plugin['TextDomain'] ) );
+		}
 	}
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
@@ -267,41 +264,6 @@ class Plugin_Beta_Tester {
 
 		return $plugin_meta;
 	}
-
-//	function register_custom_endpoints() {
-//		register_rest_route( 'vkpluginbetatester/v1', '/upgradeplugins', array(
-//			'methods'  => 'GET',
-//			'callback' => function () {
-//
-////				$timeout = 30;
-////				$to_send = compact( 'plugins', 'active' );
-////				$translations = wp_get_installed_translations( 'plugins' );
-////				$locales = array_values( get_available_languages() );
-////
-////				$options = array(
-////					'timeout'    => $timeout,
-////					'body'       => array(
-////						'plugins'      => wp_json_encode( $to_send ),
-////						'translations' => wp_json_encode( $translations ),
-////						'locale'       => wp_json_encode( $locales ),
-////						'all'          => wp_json_encode( true ),
-////					),
-////					'user-agent' => 'WordPress/' . '5.2.2' . '; ' . home_url( '/' ),
-////				);
-////
-////				$url = $http_url = 'http://api.wordpress.org/plugins/update-check/1.1/';
-////				if ( $ssl = wp_http_supports( array( 'ssl' ) ) ) {
-////					$url = set_url_scheme( $url, 'https' );
-////				}
-////				$raw_response = wp_remote_post( $url, $options );
-////				if(empty($raw_response)){
-//					$raw_response ='nothing';
-////				}
-////				wp_update_plugins();
-//				return rest_ensure_response( $raw_response );
-//			},
-//		) );
-//	}
 }
 
 $plugin_beta_tester = new Plugin_Beta_Tester;
