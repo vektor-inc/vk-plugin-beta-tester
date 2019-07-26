@@ -44,7 +44,7 @@ class Plugin_Beta_Tester {
 
 		add_action( 'admin_footer', array( $this, 'insert_update_check_javascript' ) );
 
-		add_action( 'wp_ajax_my_action', array( $this, 'my_action' ), 10, 0 );
+		add_action( 'wp_ajax_check_update_manually', array( $this, 'check_update_manually' ), 10, 0 );
 
 		add_action( 'rest_api_init', array( $this, 'register_custom_endpoints' ), 10, 0 );
 
@@ -228,7 +228,7 @@ class Plugin_Beta_Tester {
 		$new_content .= 'function checkPluginUpdate(){';
 		$new_content .= 'jQuery(document).ready(function($) {';
 		$new_content .= 'var data = {';
-		$new_content .= '"action": "my_action",';
+		$new_content .= '"action": "check_update_manually",';
 		$new_content .= '};';
 		$new_content .= 'jQuery.post(ajaxurl, data, function(response) {';
 		$new_content .= 'console.log("Response: " + response);';
@@ -240,7 +240,7 @@ class Plugin_Beta_Tester {
 		echo $new_content;
 	}
 
-	function my_action() {
+	function check_update_manually() {
 		delete_site_transient( 'update_plugins' ); // force an update
 		Plugin_Beta_Tester::reset_custom_site_transient();
 		wp_update_plugins();
