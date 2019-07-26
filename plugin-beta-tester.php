@@ -20,16 +20,6 @@ class Plugin_Beta_Tester {
 
 	function __construct() {
 
-		add_action( 'wp_enqueue_scripts', function () {
-
-			wp_localize_script( 'wp-api', 'wpApiSettings', array(
-				'root'  => esc_url_raw( rest_url() ),
-				'nonce' => wp_create_nonce( 'wp_rest' )
-			) );
-			wp_enqueue_script( 'wp-api' );
-
-		} );
-
 		// add "stable" + "beta" markers to the version numbers on the plugins page
 		add_filter( 'plugin_row_meta', array( $this, 'meta_filter' ), 10, 4 );
 
