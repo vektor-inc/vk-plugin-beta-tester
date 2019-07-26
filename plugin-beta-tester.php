@@ -8,7 +8,6 @@
 * Text Domain: vk-plugin-beta-tester
 * Author URI: https://vektor-inc.co.jp
 */
-//wp_update_plugins();
 
 define( 'PLUGIN_FILE', 'vk-plugin-beta-tester/plugin-beta-tester.php' );
 define( 'PLUGIN_BETA_TESTER_VERSION', '0.5' );
@@ -45,8 +44,6 @@ class Plugin_Beta_Tester {
 		add_action( 'admin_footer', array( $this, 'insert_update_check_javascript' ) );
 
 		add_action( 'wp_ajax_check_update_manually', array( $this, 'check_update_manually' ), 10, 0 );
-
-		add_action( 'rest_api_init', array( $this, 'register_custom_endpoints' ), 10, 0 );
 
 	}
 
