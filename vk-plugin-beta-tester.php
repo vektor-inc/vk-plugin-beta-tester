@@ -287,6 +287,7 @@ class VK_Plugin_Beta_Tester {
 
 
 	function vkpbt_the_admin_body() {
+		$this->update_active_plugin_for_beta_notice();
 
 		$this->vgjpm_create_common_form();
 
@@ -310,10 +311,56 @@ class VK_Plugin_Beta_Tester {
 		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 
 
+		//plugin slugと比較、plugin-slugにあれば追加、なければ減らす
+
+		$default = [
+			'slug' => true
+		];
+//		if ( ! $config ) {
+//			$default = [];
+//			update_option( 'vkpbt_active_plugin_for_beta_notice', $default );
+//		}
+	}
+
+
+	function update_active_plugin_for_beta_notice() {
+
+		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 		if ( ! $config ) {
-			$default = [];
-			update_option( 'vkpbt_active_plugin_for_beta_notice', $default );
+			VK_Plugin_Beta_Tester::set_default_active_plugin_for_beta_notice();
+
+			return;
 		}
+
+//		$config_key = array_keys($config);
+//		$plugins_slug = VK_Plugin_Beta_Tester::get_plugins_slug();
+//
+//		foreach ($plugins_slug as $slug){
+//
+//			if(!array_search($slug,$config_key)){
+//
+//			}
+//
+//		}
+	}
+
+	static function set_default_active_plugin_for_beta_notice() {
+
+		$default      = [];
+		$plugins_slug = VK_Plugin_Beta_Tester::get_plugins_slug();
+		foreach ( $plugins_slug as $slug ) {
+			$default[ $slug ] = false;
+		}
+		return update_option( 'vkpbt_active_plugin_for_beta_notice', $default );
+	}
+
+	/**
+	 * Get plugins slug.
+	 * @return array
+	 */
+	static function get_plugins_slug() {
+		$all_plugins_data = get_plugins();
+		return array_column( array_values( $all_plugins_data ), 'TextDomain' );
 	}
 
 	function vgjpm_save_data( $common_customfields ) {
