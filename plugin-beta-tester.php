@@ -76,6 +76,7 @@ class Plugin_Beta_Tester {
 
 			$versions = $this->versions( $slug );
 			if ( $versions && $this->version_compare( $versions->latest, $plugin['Version'] ) ) {
+
 				$upgrades[ $file ]                 = new stdClass;
 				$upgrades[ $file ]->slug           = $slug;
 				$upgrades[ $file ]->stable_version = $versions->stable;
@@ -87,6 +88,7 @@ class Plugin_Beta_Tester {
 				}
 			}
 		}
+
 		return $upgrades;
 	}
 
@@ -244,10 +246,8 @@ class Plugin_Beta_Tester {
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 
-		if ( PLUGIN_FILE === $plugin_file ) {
-			$new_content = '<a onclick="checkPluginUpdate()" style="cursor: pointer;">' . __( 'Check for updates', 'vk-plugin-beta-tester' ) . '</a>';
-			array_push( $plugin_meta, $new_content );
-		}
+		$new_content = '<a onclick="checkPluginUpdate()" style="cursor: pointer;">' . __( 'Check for Beta updates', 'vk-plugin-beta-tester' ) . '</a>';
+		array_push( $plugin_meta, $new_content );
 
 		return $plugin_meta;
 	}
