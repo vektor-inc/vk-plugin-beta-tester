@@ -35,6 +35,8 @@ class Plugin_Beta_Tester {
 
 		add_action( 'wp_ajax_check_update_manually', array( $this, 'check_update_manually' ), 10, 0 );
 
+		add_action( 'admin_menu', array( $this, 'add_main_setting' ), 10, 0 );
+
 	}
 
 	function reset_transient() {
@@ -250,6 +252,54 @@ class Plugin_Beta_Tester {
 		array_push( $plugin_meta, $new_content );
 
 		return $plugin_meta;
+	}
+
+	function add_main_setting() {
+
+		$custom_page = add_submenu_page(
+			'options-general.php',            // parent
+			__( 'VK Plugin Beta Tester setting', 'vk-plugin-beta-tester' ),   // Name of page
+			__( 'VK Plugin Beta Tester setting', 'vk-plugin-beta-tester' ),   // Label in menu
+			'activate_plugins',               // veu_get_capability_required()でないのは edit_theme_options権限を付与したユーザーにもアクセスさせないためにactivate_pluginsにしている。
+			'vk-plugin-beta-tester-setting',            // ユニークなこのサブメニューページの識別子
+			array( $this, 'render_main_frame' )        // メニューページのコンテンツを出力する関数
+		);
+		if ( ! $custom_page ) {
+			return;
+		}
+	}
+
+	function render_main_frame() {
+		echo "<h1>Hello</h1>";
+
+//		vkExUnit_save_main_config();
+//
+//		// Left menu area top Title
+//		$get_page_title = veu_get_little_short_name() . ' Main setting';
+//
+//		// Left menu area top logo
+//		$get_logo_html = veu_get_systemlogo_html();
+//
+//		// $menu
+//		/*--------------------------------------------------*/
+//		global $vkExUnit_options;
+//		if ( ! isset( $vkExUnit_options ) ) {
+//			$vkExUnit_options = array();
+//		}
+//		$get_menu_html = '';
+//		foreach ( $vkExUnit_options as $vkoption ) {
+//			if ( ! isset( $vkoption['render_page'] ) ) {
+//				continue;
+//			}
+//			// $linkUrl = ($i == 0) ? 'wpwrap':$vkoption['option_name'];
+//			$linkUrl       = $vkoption['option_name'];
+//			$get_menu_html .= '<li id="btn_"' . $vkoption['option_name'] . '" class="' . $vkoption['option_name'] . '"><a href="#' . $linkUrl . '">';
+//			$get_menu_html .= $vkoption['tab_label'];
+//			$get_menu_html .= '</a></li>';
+//		}
+//
+//		Vk_Admin::admin_page_frame( $get_page_title, 'vkExUnit_the_main_setting_body', $get_logo_html, $get_menu_html );
+//
 	}
 }
 
