@@ -287,9 +287,8 @@ class VK_Plugin_Beta_Tester {
 
 
 	function vkpbt_the_admin_body() {
-
-//		$this->vgjpm_save_data();
-		$this->update_active_plugin_for_beta_notice();
+		$this->vkpbt_save_data();
+//		$this->update_active_plugin_for_beta_notice();
 		echo '<h3>' . __( 'Beta Update Notice Setting' ) . '</h3>';
 		echo '<div id="beta-update-notice-setting" class="sectionBox">';
 		echo $this->vgjpm_create_common_form();
@@ -301,33 +300,28 @@ class VK_Plugin_Beta_Tester {
 		$config               = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 		$plugin_count         = get_option( 'vkpbt_installed_plugins_count' );
 		$current_plugin_count = count( VK_Plugin_Beta_Tester::get_plugins_slug() );
+		$plugins_slug         = VK_Plugin_Beta_Tester::get_plugins_slug();
+		$config_key           = array_keys( $config );
 
-		if ( ! $config || $plugin_count ) {
+		if ( ! $config ) {
 
 			$config       = VK_Plugin_Beta_Tester::set_default_active_plugin_for_beta_notice();
 			$plugin_count = $current_plugin_count;
 
-		} elseif ( $plugin_count !== $current_plugin_count ) {
-
-			$plugins_slug = VK_Plugin_Beta_Tester::get_plugins_slug();
-			$config_key   = array_keys( $config );
-
-			if ( count( $plugins_slug ) > count( $config_key ) ) {
-
-				foreach ( $plugins_slug as $slug ) {
-					//If new plugin is added. Add the slug to saved array.
-					if ( ! array_search( $slug, $config_key ) ) {
-						$config[ $slug ] = false;
-					}
+		} elseif ( count( $plugins_slug ) > count( $config_key ) ) {
+			foreach ( $plugins_slug as $slug ) {
+				//If new plugin is added. Add the slug to saved array.
+				if ( ! array_search( $slug, $config_key ) ) {
+					$config[ $slug ] = false;
 				}
+			}
 
-			} elseif ( count( $plugins_slug ) < count( $config_key ) ) {
+		} elseif ( count( $plugins_slug ) < count( $config_key ) ) {
 
-				foreach ( $config_key as $slug ) {
-					//If new plugin is added. Add the slug to saved array.
-					if ( ! array_search( $slug, $plugins_slug ) ) {
-						unset( $config[ $slug ] );
-					}
+			foreach ( $config_key as $slug ) {
+				//If new plugin is added. Add the slug to saved array.
+				if ( ! array_search( $slug, $plugins_slug ) ) {
+					unset( $config[ $slug ] );
 				}
 			}
 		}
@@ -369,21 +363,26 @@ class VK_Plugin_Beta_Tester {
 		if ( ! wp_verify_nonce( $_POST['vkpbt_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
 			return;
 		}
-		if ( ! isset( $common_customfields ) ) {
-			return;
-		}
+
+//		if ( ! isset( $_POST['vkpbt_active_plugin_for_beta_notice'] ) && ! is_array( $_POST['vkpbt_active_plugin_for_beta_notice'] ) ) {
+//			return;
+//		}
 
 
-		foreach ( $common_customfields as $key => $value ) {
-				$checkbox_key = $vgjpm_prefix . sanitize_text_field( $key );
-				if ( isset( $_POST[ $checkbox_key ] ) && is_array( $_POST[ $checkbox_key ] ) ) {
-					update_option( $checkbox_key, vgjpm_sanitize_arr( $_POST[ $checkbox_key ] ) );
-				} else {
-					update_option( $checkbox_key, [] );
-				}
-			vgjpm_save_check_list();
-			vgjpm_save_create_jobpost_posttype();
+		$saved      = $_POST['vkpbt_active_plugin_for_beta_notice'];
+		$config     = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$config_key = array_keys( $config );
+
+		foreach ( $saved as $slug ) {
+			//If new plugin is added. Add the slug to saved array.
+			if ( array_search( $slug, $config_key ) ) {
+				$config[ $slug ] = true;
+			}
 		}
+
+		update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
+
+
 	}
 
 	function vgjpm_create_common_form() {
@@ -400,12 +399,14 @@ class VK_Plugin_Beta_Tester {
 
 		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 
+		var_dump( $config );
 		$list       = '<ul>';
 		foreach ( $config as $slug => $checked_saved ) {
-				$checked       = ( isset( $checked_saved ) && $checked_saved == 'true' ) ? ' checked' : '';
-				$list          .= '<li><label>';
-				$list          .= '<input type="checkbox" name="vgjpm_post_type_display_customfields' . esc_attr( $slug ) . '" value="true"' . esc_attr( $checked ) . ' />' . esc_html( $slug );
-				$list          .= '</label></li>';
+
+			$checked = ( isset( $checked_saved ) ) ? ' checked' : '';
+			$list    .= '<li><label>';
+			$list    .= '<input type="checkbox" name="vkpbt_active_plugin_for_beta_notice[]" value="' . esc_attr( $slug ) . '"' . esc_attr( $checked ) . ' />' . esc_html( $slug );
+			$list    .= '</label></li>';
 		}
 		$list .= '</ul>';
 
