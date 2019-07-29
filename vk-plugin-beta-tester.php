@@ -287,63 +287,59 @@ class VK_Plugin_Beta_Tester {
 
 
 	function vkpbt_the_admin_body() {
+
+//		$this->vgjpm_save_data();
 		$this->update_active_plugin_for_beta_notice();
-
-		$this->vgjpm_create_common_form();
-
 		echo '<h3>' . __( 'Beta Update Notice Setting' ) . '</h3>';
-//	$options = veu_get_sns_options();
 		echo '<div id="beta-update-notice-setting" class="sectionBox">';
-		echo '<table class="form-table">';
-		echo '<tr>';
-		echo '<th>' . _e( 'Post title custom for SNS', 'vk-all-in-one-expansion-unit' ) . '</th>';
-		echo '<td><label>';
-//	echo '<input type="checkbox" name="vkExUnit_sns_options[snsTitle_use_only_postTitle]" id="snsTitle_use_only_postTitle" value="true"' .  ( $options['snsTitle_use_only_postTitle'] ) ? 'checked' : '' . '/>' .  _e( 'For SNS title be composed by post title only.', 'vk-all-in-one-expansion-unit' ) .'</label>';
-		echo '</td>';
-		echo '</tr>';
-		echo '</table>';
-		submit_button();
+		echo $this->vgjpm_create_common_form();
 		echo '</div>';
 	}
 
-	function get_active_plugin_for_beta_notice() {
+	static function update_active_plugin_for_beta_notice() {
 
-		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$config               = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$plugin_count         = get_option( 'vkpbt_installed_plugins_count' );
+		$current_plugin_count = count( VK_Plugin_Beta_Tester::get_plugins_slug() );
 
+		if ( ! $config || $plugin_count ) {
 
-		//plugin slugと比較、plugin-slugにあれば追加、なければ減らす
+			$config       = VK_Plugin_Beta_Tester::set_default_active_plugin_for_beta_notice();
+			$plugin_count = $current_plugin_count;
 
-		$default = [
-			'slug' => true
-		];
-//		if ( ! $config ) {
-//			$default = [];
-//			update_option( 'vkpbt_active_plugin_for_beta_notice', $default );
-//		}
-	}
+		} elseif ( $plugin_count !== $current_plugin_count ) {
 
+			$plugins_slug = VK_Plugin_Beta_Tester::get_plugins_slug();
+			$config_key   = array_keys( $config );
 
-	function update_active_plugin_for_beta_notice() {
+			if ( count( $plugins_slug ) > count( $config_key ) ) {
 
-		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-		if ( ! $config ) {
-			VK_Plugin_Beta_Tester::set_default_active_plugin_for_beta_notice();
+				foreach ( $plugins_slug as $slug ) {
+					//If new plugin is added. Add the slug to saved array.
+					if ( ! array_search( $slug, $config_key ) ) {
+						$config[ $slug ] = false;
+					}
+				}
 
-			return;
+			} elseif ( count( $plugins_slug ) < count( $config_key ) ) {
+
+				foreach ( $config_key as $slug ) {
+					//If new plugin is added. Add the slug to saved array.
+					if ( ! array_search( $slug, $plugins_slug ) ) {
+						unset( $config[ $slug ] );
+					}
+				}
+			}
 		}
 
-//		$config_key = array_keys($config);
-//		$plugins_slug = VK_Plugin_Beta_Tester::get_plugins_slug();
-//
-//		foreach ($plugins_slug as $slug){
-//
-//			if(!array_search($slug,$config_key)){
-//
-//			}
-//
-//		}
+		update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
+		update_option( 'vkpbt_installed_plugins_count', $plugin_count );
 	}
 
+	/**
+	 * If option value is false, return default value.
+	 * @return array
+	 */
 	static function set_default_active_plugin_for_beta_notice() {
 
 		$default      = [];
@@ -351,7 +347,8 @@ class VK_Plugin_Beta_Tester {
 		foreach ( $plugins_slug as $slug ) {
 			$default[ $slug ] = false;
 		}
-		return update_option( 'vkpbt_active_plugin_for_beta_notice', $default );
+
+		return $default;
 	}
 
 	/**
@@ -363,13 +360,13 @@ class VK_Plugin_Beta_Tester {
 		return array_column( array_values( $all_plugins_data ), 'TextDomain' );
 	}
 
-	function vgjpm_save_data( $common_customfields ) {
-		global $vgjpm_prefix;
+	function vkpbt_save_data() {
+
 		// nonce
-		if ( ! isset( $_POST['vgjpm_nonce'] ) ) {
+		if ( ! isset( $_POST['vkpbt_nonce'] ) ) {
 			return;
 		}
-		if ( ! wp_verify_nonce( $_POST['vgjpm_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
+		if ( ! wp_verify_nonce( $_POST['vkpbt_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
 			return;
 		}
 		if ( ! isset( $common_customfields ) ) {
@@ -378,58 +375,37 @@ class VK_Plugin_Beta_Tester {
 
 
 		foreach ( $common_customfields as $key => $value ) {
-			if ( $value['type'] == 'text' || $value['type'] == 'select' || $value['type'] == 'image' || $value['type'] == 'datepicker' ) {
-				update_option( $vgjpm_prefix . sanitize_text_field( $key ), vgjpm_sanitize_arr( $_POST[ $vgjpm_prefix . $key ] ) );
-			} elseif ( $value['type'] == 'textarea' ) {
-				update_option( $vgjpm_prefix . sanitize_text_field( $key ), sanitize_textarea_field( $_POST[ $vgjpm_prefix . $key ] ) );
-			} elseif ( $value['type'] == 'checkbox' ) {
 				$checkbox_key = $vgjpm_prefix . sanitize_text_field( $key );
 				if ( isset( $_POST[ $checkbox_key ] ) && is_array( $_POST[ $checkbox_key ] ) ) {
 					update_option( $checkbox_key, vgjpm_sanitize_arr( $_POST[ $checkbox_key ] ) );
 				} else {
 					update_option( $checkbox_key, [] );
 				}
-			}
 			vgjpm_save_check_list();
 			vgjpm_save_create_jobpost_posttype();
 		}
 	}
 
 	function vgjpm_create_common_form() {
-		$form = '<div class="vgjpm">';
-		$form .= '<h1>' . __( 'Job Posting Manager Settings', 'vk-google-job-posting-manager' ) . '</h1>';
-		$form .= '<form method="post" action="">';
-		$form .= wp_nonce_field( 'standing_on_the_shoulder_of_giants', 'vgjpm_nonce' );
-		$form .= '<h2>' . __( 'Create Job-Posts Post type', 'vk-google-job-posting-manager' ) . '</h2>';
-		$form .= '<p>' . __( 'This plugin automatically create post type for Job Posting.<br>If you have already created custom post type for Job Post, please remove this check and select post type of next check boxes.', 'vk-google-job-posting-manager' ) . '</p>';
-//		$form .= vgjpm_create_jobpost_posttype();
-		$form .= '<h2>' . __( 'Choose the post type to display job posting custom fields', 'vk-google-job-posting-manager' ) . '</h2>';
+		$form = '<form method="post" action="">';
+		$form .= wp_nonce_field( 'standing_on_the_shoulder_of_giants', 'vkpbt_nonce' );
+		$form .= '<p>' . __( 'Select plugins to display beta update notices', 'vk-google-job-posting-manager' ) . '</p>';
 		$form .= $this->vgjpm_post_type_check_list();
-		$form .= '<h2>' . __( 'Common Fields', 'vk-google-job-posting-manager' ) . '</h2>';
-		$form .= '<p>' . __( 'If a single page is filled in, the content of the single page takes precedence.', 'vk-google-job-posting-manager' ) . '</p>';
-//		$form .= vgjpm_render_form_input( $common_customfields );
 		$form .= '<input type="submit" value="' . __( 'Save Changes', 'vk-google-job-posting-manager' ) . '" class="button button-primary">';
 		$form .= '</form>';
-		$form .= '<div class="footer-logo"><a href="https://www.vektor-inc.co.jp"><img src="' . plugin_dir_url( __FILE__ ) . 'assets/images/vektor_logo.png" alt="Vektor,Inc." /></a></div>';
-		$form .= '</div>';
-
 		return $form;
 	}
 
 	function vgjpm_post_type_check_list() {
-		$args       = array(
-			'public' => true,
-		);
-		$post_types = get_post_types( $args, 'object' );
+
+		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+
 		$list       = '<ul>';
-		foreach ( $post_types as $key => $value ) {
-			if ( $key != 'attachment' && $key != 'job-posts' ) {
-				$checked_saved = get_option( 'vgjpm_post_type_display_customfields' . $key );
+		foreach ( $config as $slug => $checked_saved ) {
 				$checked       = ( isset( $checked_saved ) && $checked_saved == 'true' ) ? ' checked' : '';
 				$list          .= '<li><label>';
-				$list          .= '<input type="checkbox" name="vgjpm_post_type_display_customfields' . esc_attr( $key ) . '" value="true"' . esc_attr( $checked ) . ' />' . esc_html( $value->label );
+				$list          .= '<input type="checkbox" name="vgjpm_post_type_display_customfields' . esc_attr( $slug ) . '" value="true"' . esc_attr( $checked ) . ' />' . esc_html( $slug );
 				$list          .= '</label></li>';
-			}
 		}
 		$list .= '</ul>';
 
