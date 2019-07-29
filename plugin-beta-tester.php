@@ -246,7 +246,7 @@ class Plugin_Beta_Tester {
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 
-		$new_content = '<a onclick="checkPluginUpdate()" style="cursor: pointer;">' . __( 'Check for Beta updates', 'vk-plugin-beta-tester' ) . '</a>';
+		$new_content = '<a onclick="checkPluginUpdate()" style="cursor: pointer;">' . __( 'Check for beta updates', 'vk-plugin-beta-tester' ) . '</a>';
 		array_push( $plugin_meta, $new_content );
 
 		return $plugin_meta;
