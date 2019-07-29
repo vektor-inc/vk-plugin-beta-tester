@@ -9,13 +9,14 @@
 * Author URI: https://vektor-inc.co.jp
 */
 
-define( 'PLUGIN_FILE', 'vk-plugin-beta-tester/plugin-beta-tester.php' );
+define( 'PLUGIN_FILE', 'vk-plugin-beta-tester/vk-plugin-beta-tester.php' );
 define( 'PLUGIN_BETA_TESTER_VERSION', '0.5' );
 if ( ! defined( 'PLUGIN_BETA_TESTER_EXPIRATION' ) ) {
 	define( 'PLUGIN_BETA_TESTER_EXPIRATION', 60 * 60 * 24 );
 }
+require_once dirname( __FILE__ ) . '/inc/vk-admin/vk-admin-config.php';
 
-class Plugin_Beta_Tester {
+class VK_Plugin_Beta_Tester {
 	private $api_cache = array();
 
 	function __construct() {
@@ -86,7 +87,7 @@ class Plugin_Beta_Tester {
 				$upgrades[ $file ]->url            = "http://wordpress.org/extend/plugins/$slug/";
 				$upgrades[ $file ]->package        = "http://downloads.wordpress.org/plugin/$slug.{$versions->latest}.zip";
 				if ( $this->version_compare( $versions->latest, $upgrades[ $file ]->stable_version ) ) {
-					$upgrades[ $file ]->upgrade_notice = ' <strong>' . __( 'This release is a beta.', 'plugin-beta-tester' ) . '</strong>';
+					$upgrades[ $file ]->upgrade_notice = ' <strong>' . __( 'This release is a beta.', 'vk-plugin-beta-tester' ) . '</strong>';
 				}
 			}
 		}
@@ -116,7 +117,7 @@ class Plugin_Beta_Tester {
 	}
 	function beta_message( $plugin_data, $r ) {
 		if ( $this->version_compare( $r->new_version, $r->stable_version ) ) {
-			echo ' <span style="color:red;">' . sprintf( __( 'Please note that version %s is a beta.', 'plugin-beta-tester' ), $r->new_version ) . '</span> ' . sprintf( __( 'The latest stable version is %s.', 'plugin-beta-tester' ), $r->stable_version );
+			echo ' <span style="color:red;">' . sprintf( __( 'Please note that version %s is a beta.', 'vk-plugin-beta-tester' ), $r->new_version ) . '</span> ' . sprintf( __( 'The latest stable version is %s.', 'vk-plugin-beta-tester' ), $r->stable_version );
 		}
 	}
 	function meta_filter( $plugin_meta, $plugin_file, $plugin_data, $context ) {
@@ -131,9 +132,9 @@ class Plugin_Beta_Tester {
 
 		if ( $versions && $stable = $versions->stable ) {
 			if ( $stable == $plugin_data['Version'] ) {
-				$plugin_meta[0] .= __( ' (stable)', 'plugin-beta-tester' );
+				$plugin_meta[0] .= __( ' (stable)', 'vk-plugin-beta-tester' );
 			} elseif ( $this->version_compare( $plugin_data['Version'], $stable ) ) {
-				$plugin_meta[0] .= __( ' (<strong>beta</strong>)', 'plugin-beta-tester' );
+				$plugin_meta[0] .= __( ' (<strong>beta</strong>)', 'vk-plugin-beta-tester' );
 			}
 		}
 		return $plugin_meta;
@@ -233,7 +234,7 @@ class Plugin_Beta_Tester {
 
 	function check_update_manually() {
 		delete_site_transient( 'update_plugins' ); // force an update
-		Plugin_Beta_Tester::reset_custom_site_transient();
+		VK_Plugin_Beta_Tester::reset_custom_site_transient();
 		wp_update_plugins();
 		wp_die();
 	}
@@ -255,55 +256,141 @@ class Plugin_Beta_Tester {
 	}
 
 	function add_main_setting() {
-
+		// $capability_required = veu_get_capability_required();
 		$custom_page = add_submenu_page(
 			'options-general.php',            // parent
-			__( 'VK Plugin Beta Tester setting', 'vk-plugin-beta-tester' ),   // Name of page
-			__( 'VK Plugin Beta Tester setting', 'vk-plugin-beta-tester' ),   // Label in menu
+			__( 'VK Plugin Beta Tester Setting', 'vk-plugin-beta-tester' ),   // Name of page
+			__( 'VK Plugin Beta Tester Setting', 'vk-plugin-beta-tester' ),   // Label in menu
 			'activate_plugins',               // veu_get_capability_required()でないのは edit_theme_options権限を付与したユーザーにもアクセスさせないためにactivate_pluginsにしている。
+			// $capability_required,          // Capability
 			'vk-plugin-beta-tester-setting',            // ユニークなこのサブメニューページの識別子
-			array( $this, 'render_main_frame' )        // メニューページのコンテンツを出力する関数
+			array( $this, 'vkpbt_add_customSettingPage' )       // メニューページのコンテンツを出力する関数
 		);
 		if ( ! $custom_page ) {
 			return;
 		}
 	}
 
-	function render_main_frame() {
-		echo "<h1>Hello</h1>";
+	/*-------------------------------------------*/
+	/*	Setting Page
+	/*-------------------------------------------*/
+	function vkpbt_add_customSettingPage() {
+		$get_page_title = __( 'VK Plugin Beta Tester Setting', 'vk-plugin-beta-tester' );
+		$get_logo_html  = '';
+		$get_menu_html  = '<li><a href="#beta-update-notice-setting">' . __( 'Beta Update Notice Setting', 'vk-plugin-beta-tester' ) . '</a></li>';
 
-//		vkExUnit_save_main_config();
-//
-//		// Left menu area top Title
-//		$get_page_title = veu_get_little_short_name() . ' Main setting';
-//
-//		// Left menu area top logo
-//		$get_logo_html = veu_get_systemlogo_html();
-//
-//		// $menu
-//		/*--------------------------------------------------*/
-//		global $vkExUnit_options;
-//		if ( ! isset( $vkExUnit_options ) ) {
-//			$vkExUnit_options = array();
-//		}
-//		$get_menu_html = '';
-//		foreach ( $vkExUnit_options as $vkoption ) {
-//			if ( ! isset( $vkoption['render_page'] ) ) {
-//				continue;
-//			}
-//			// $linkUrl = ($i == 0) ? 'wpwrap':$vkoption['option_name'];
-//			$linkUrl       = $vkoption['option_name'];
-//			$get_menu_html .= '<li id="btn_"' . $vkoption['option_name'] . '" class="' . $vkoption['option_name'] . '"><a href="#' . $linkUrl . '">';
-//			$get_menu_html .= $vkoption['tab_label'];
-//			$get_menu_html .= '</a></li>';
-//		}
-//
-//		Vk_Admin::admin_page_frame( $get_page_title, 'vkExUnit_the_main_setting_body', $get_logo_html, $get_menu_html );
-//
+		Vk_Admin::admin_page_frame( $get_page_title, array(
+			$this,
+			'vkpbt_the_admin_body'
+		), $get_logo_html, $get_menu_html );
+	}
+
+
+	function vkpbt_the_admin_body() {
+
+		$this->vgjpm_create_common_form();
+
+		echo '<h3>' . __( 'Beta Update Notice Setting' ) . '</h3>';
+//	$options = veu_get_sns_options();
+		echo '<div id="beta-update-notice-setting" class="sectionBox">';
+		echo '<table class="form-table">';
+		echo '<tr>';
+		echo '<th>' . _e( 'Post title custom for SNS', 'vk-all-in-one-expansion-unit' ) . '</th>';
+		echo '<td><label>';
+//	echo '<input type="checkbox" name="vkExUnit_sns_options[snsTitle_use_only_postTitle]" id="snsTitle_use_only_postTitle" value="true"' .  ( $options['snsTitle_use_only_postTitle'] ) ? 'checked' : '' . '/>' .  _e( 'For SNS title be composed by post title only.', 'vk-all-in-one-expansion-unit' ) .'</label>';
+		echo '</td>';
+		echo '</tr>';
+		echo '</table>';
+		submit_button();
+		echo '</div>';
+	}
+
+	function get_active_plugin_for_beta_notice() {
+
+		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+
+
+		if ( ! $config ) {
+			$default = [];
+			update_option( 'vkpbt_active_plugin_for_beta_notice', $default );
+		}
+	}
+
+	function vgjpm_save_data( $common_customfields ) {
+		global $vgjpm_prefix;
+		// nonce
+		if ( ! isset( $_POST['vgjpm_nonce'] ) ) {
+			return;
+		}
+		if ( ! wp_verify_nonce( $_POST['vgjpm_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
+			return;
+		}
+		if ( ! isset( $common_customfields ) ) {
+			return;
+		}
+
+
+		foreach ( $common_customfields as $key => $value ) {
+			if ( $value['type'] == 'text' || $value['type'] == 'select' || $value['type'] == 'image' || $value['type'] == 'datepicker' ) {
+				update_option( $vgjpm_prefix . sanitize_text_field( $key ), vgjpm_sanitize_arr( $_POST[ $vgjpm_prefix . $key ] ) );
+			} elseif ( $value['type'] == 'textarea' ) {
+				update_option( $vgjpm_prefix . sanitize_text_field( $key ), sanitize_textarea_field( $_POST[ $vgjpm_prefix . $key ] ) );
+			} elseif ( $value['type'] == 'checkbox' ) {
+				$checkbox_key = $vgjpm_prefix . sanitize_text_field( $key );
+				if ( isset( $_POST[ $checkbox_key ] ) && is_array( $_POST[ $checkbox_key ] ) ) {
+					update_option( $checkbox_key, vgjpm_sanitize_arr( $_POST[ $checkbox_key ] ) );
+				} else {
+					update_option( $checkbox_key, [] );
+				}
+			}
+			vgjpm_save_check_list();
+			vgjpm_save_create_jobpost_posttype();
+		}
+	}
+
+	function vgjpm_create_common_form() {
+		$form = '<div class="vgjpm">';
+		$form .= '<h1>' . __( 'Job Posting Manager Settings', 'vk-google-job-posting-manager' ) . '</h1>';
+		$form .= '<form method="post" action="">';
+		$form .= wp_nonce_field( 'standing_on_the_shoulder_of_giants', 'vgjpm_nonce' );
+		$form .= '<h2>' . __( 'Create Job-Posts Post type', 'vk-google-job-posting-manager' ) . '</h2>';
+		$form .= '<p>' . __( 'This plugin automatically create post type for Job Posting.<br>If you have already created custom post type for Job Post, please remove this check and select post type of next check boxes.', 'vk-google-job-posting-manager' ) . '</p>';
+//		$form .= vgjpm_create_jobpost_posttype();
+		$form .= '<h2>' . __( 'Choose the post type to display job posting custom fields', 'vk-google-job-posting-manager' ) . '</h2>';
+		$form .= $this->vgjpm_post_type_check_list();
+		$form .= '<h2>' . __( 'Common Fields', 'vk-google-job-posting-manager' ) . '</h2>';
+		$form .= '<p>' . __( 'If a single page is filled in, the content of the single page takes precedence.', 'vk-google-job-posting-manager' ) . '</p>';
+//		$form .= vgjpm_render_form_input( $common_customfields );
+		$form .= '<input type="submit" value="' . __( 'Save Changes', 'vk-google-job-posting-manager' ) . '" class="button button-primary">';
+		$form .= '</form>';
+		$form .= '<div class="footer-logo"><a href="https://www.vektor-inc.co.jp"><img src="' . plugin_dir_url( __FILE__ ) . 'assets/images/vektor_logo.png" alt="Vektor,Inc." /></a></div>';
+		$form .= '</div>';
+
+		return $form;
+	}
+
+	function vgjpm_post_type_check_list() {
+		$args       = array(
+			'public' => true,
+		);
+		$post_types = get_post_types( $args, 'object' );
+		$list       = '<ul>';
+		foreach ( $post_types as $key => $value ) {
+			if ( $key != 'attachment' && $key != 'job-posts' ) {
+				$checked_saved = get_option( 'vgjpm_post_type_display_customfields' . $key );
+				$checked       = ( isset( $checked_saved ) && $checked_saved == 'true' ) ? ' checked' : '';
+				$list          .= '<li><label>';
+				$list          .= '<input type="checkbox" name="vgjpm_post_type_display_customfields' . esc_attr( $key ) . '" value="true"' . esc_attr( $checked ) . ' />' . esc_html( $value->label );
+				$list          .= '</label></li>';
+			}
+		}
+		$list .= '</ul>';
+
+		return $list;
 	}
 }
 
-$plugin_beta_tester = new Plugin_Beta_Tester;
+$plugin_beta_tester = new VK_Plugin_Beta_Tester;
 
 // clear the transient "upgrade plugins" cache when switching
 register_activation_hook( __FILE__, array( $plugin_beta_tester, 'reset_transient' ) );
