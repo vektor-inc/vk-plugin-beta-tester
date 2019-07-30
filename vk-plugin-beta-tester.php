@@ -24,13 +24,13 @@ class VK_Plugin_Beta_Tester {
 		// add "stable" + "beta" markers to the version numbers on the plugins page
 		add_filter( 'plugin_row_meta', array( $this, 'meta_filter' ), 10, 4 );
 
+		add_filter( 'plugin_row_meta', array( $this, 'add_update_link_to_plugins_row' ), 10, 4 );
+
 		// add messages to the plugins page
 		add_action( 'pre_current_active_plugins', array( $this, 'register_messages' ) );
 
 		// hijack the upgrades response from wordpress.org
 		add_filter( 'http_response', array( $this, 'http_filter' ), 10, 3 );
-
-		add_filter( 'plugin_row_meta', array( $this, 'add_update_link_to_plugins_row' ), 10, 4 );
 
 		add_action( 'admin_footer', array( $this, 'insert_update_check_javascript' ) );
 
@@ -77,6 +77,10 @@ class VK_Plugin_Beta_Tester {
 				continue;
 			}
 
+			if ( ! $this->is_slug_allowed_beta_notice( $plugin['TextDomain'] ) ) {
+				continue;
+			}
+
 			$versions = $this->versions( $slug );
 			if ( $versions && $this->version_compare( $versions->latest, $plugin['Version'] ) ) {
 
@@ -116,15 +120,25 @@ class VK_Plugin_Beta_Tester {
 		}
 	}
 	function beta_message( $plugin_data, $r ) {
+
+		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
+			return;
+		}
+
 		if ( $this->version_compare( $r->new_version, $r->stable_version ) ) {
 			echo ' <span style="color:red;">' . sprintf( __( 'Please note that version %s is a beta.', 'vk-plugin-beta-tester' ), $r->new_version ) . '</span> ' . sprintf( __( 'The latest stable version is %s.', 'vk-plugin-beta-tester' ), $r->stable_version );
 		}
 	}
 	function meta_filter( $plugin_meta, $plugin_file, $plugin_data, $context ) {
 
-		$slug = $this->get_plugin_slug( $plugin_file, $plugin_data );
+		$slug        = $this->get_plugin_slug( $plugin_file, $plugin_data );
+		$text_domain = $plugin_data['TextDomain'];
 
 		if ( ! $slug ) {
+			return $plugin_meta;
+		}
+
+		if ( ! $this->is_slug_allowed_beta_notice( $text_domain ) ) {
 			return $plugin_meta;
 		}
 
@@ -138,6 +152,19 @@ class VK_Plugin_Beta_Tester {
 			}
 		}
 		return $plugin_meta;
+	}
+
+	/**
+	 * @param $text_domain
+	 *
+	 * @return Boolean
+	 */
+	function is_slug_allowed_beta_notice( $text_domain ) {
+
+		$this->update_active_plugin_for_beta_notice();
+		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+
+		return $config[ $text_domain ];
 	}
 
 	// UTILITIES:
@@ -249,6 +276,10 @@ class VK_Plugin_Beta_Tester {
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 
+		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
+			return $plugin_meta;
+		}
+
 		$new_content = '<a onclick="checkPluginUpdate()" style="cursor: pointer;">' . __( 'Check for beta updates', 'vk-plugin-beta-tester' ) . '</a>';
 		array_push( $plugin_meta, $new_content );
 
@@ -294,7 +325,6 @@ class VK_Plugin_Beta_Tester {
 
 	function vkpbt_the_admin_body() {
 		$this->vkpbt_save_data();
-//		$this->update_active_plugin_for_beta_notice();
 		echo '<h3>' . __( 'Beta Update Notice Setting' ) . '</h3>';
 		echo '<div id="beta-update-notice-setting" class="sectionBox">';
 		echo $this->vkpbt_create_common_form();
