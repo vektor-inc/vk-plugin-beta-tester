@@ -269,6 +269,12 @@ class VK_Plugin_Beta_Tester {
 		if ( ! $custom_page ) {
 			return;
 		}
+
+		add_action( 'admin_head-' . $custom_page, array( $this, 'update_to_current' ) );
+	}
+
+	function update_to_current() {
+		$this->update_active_plugin_for_beta_notice();
 	}
 
 	/*-------------------------------------------*/
@@ -291,53 +297,36 @@ class VK_Plugin_Beta_Tester {
 //		$this->update_active_plugin_for_beta_notice();
 		echo '<h3>' . __( 'Beta Update Notice Setting' ) . '</h3>';
 		echo '<div id="beta-update-notice-setting" class="sectionBox">';
-		echo $this->vgjpm_create_common_form();
+		echo $this->vkpbt_create_common_form();
 		echo '</div>';
 	}
 
-	static function update_active_plugin_for_beta_notice() {
+	function update_active_plugin_for_beta_notice() {
 
-		$config               = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-		$plugin_count         = get_option( 'vkpbt_installed_plugins_count' );
-		$current_plugin_count = count( VK_Plugin_Beta_Tester::get_plugins_slug() );
-		$plugins_slug         = VK_Plugin_Beta_Tester::get_plugins_slug();
-		$config_key           = array_keys( $config );
+		$config       = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$config_key   = array_keys( $config );
+		$plugins_slug = $this->get_plugins_slug();
+		$update       = [];
 
-		if ( ! $config ) {
+		foreach ( $plugins_slug as $slug ) {
 
-			$config       = VK_Plugin_Beta_Tester::set_default_active_plugin_for_beta_notice();
-			$plugin_count = $current_plugin_count;
-
-		} elseif ( count( $plugins_slug ) > count( $config_key ) ) {
-			foreach ( $plugins_slug as $slug ) {
-				//If new plugin is added. Add the slug to saved array.
-				if ( ! array_search( $slug, $config_key ) ) {
-					$config[ $slug ] = false;
-				}
-			}
-
-		} elseif ( count( $plugins_slug ) < count( $config_key ) ) {
-
-			foreach ( $config_key as $slug ) {
-				//If new plugin is added. Add the slug to saved array.
-				if ( ! array_search( $slug, $plugins_slug ) ) {
-					unset( $config[ $slug ] );
-				}
+			if ( array_search( $slug, $config_key ) !== false ) {
+				$update[ $slug ] = $config[ $slug ];
+			} else {
+				$update[ $slug ] = false;
 			}
 		}
-
-		update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
-		update_option( 'vkpbt_installed_plugins_count', $plugin_count );
+		update_option( 'vkpbt_active_plugin_for_beta_notice', $update );
 	}
 
 	/**
 	 * If option value is false, return default value.
 	 * @return array
 	 */
-	static function set_default_active_plugin_for_beta_notice() {
+	function set_default_active_plugin_for_beta_notice() {
 
 		$default      = [];
-		$plugins_slug = VK_Plugin_Beta_Tester::get_plugins_slug();
+		$plugins_slug = $this->get_plugins_slug();
 		foreach ( $plugins_slug as $slug ) {
 			$default[ $slug ] = false;
 		}
@@ -349,11 +338,14 @@ class VK_Plugin_Beta_Tester {
 	 * Get plugins slug.
 	 * @return array
 	 */
-	static function get_plugins_slug() {
+	function get_plugins_slug() {
 		$all_plugins_data = get_plugins();
 		return array_column( array_values( $all_plugins_data ), 'TextDomain' );
 	}
 
+	/**
+	 *  Save data from the form.
+	 */
 	function vkpbt_save_data() {
 
 		// nonce
@@ -364,46 +356,64 @@ class VK_Plugin_Beta_Tester {
 			return;
 		}
 
-//		if ( ! isset( $_POST['vkpbt_active_plugin_for_beta_notice'] ) && ! is_array( $_POST['vkpbt_active_plugin_for_beta_notice'] ) ) {
-//			return;
-//		}
+		if ( ! isset( $_POST['vkpbt_active_plugin_for_beta_notice'] ) ) {
 
-
-		$saved      = $_POST['vkpbt_active_plugin_for_beta_notice'];
-		$config     = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-		$config_key = array_keys( $config );
-
-		foreach ( $saved as $slug ) {
-			//If new plugin is added. Add the slug to saved array.
-			if ( array_search( $slug, $config_key ) ) {
-				$config[ $slug ] = true;
+			//Check the data is from checkbox form or not.
+			if ( $this->isFromCheckbox( $_POST['_wp_http_referer'] ) ) {
+				$_POST['vkpbt_active_plugin_for_beta_notice'] = [];
+			} else {
+				return;
 			}
 		}
 
+		$post            = $_POST['vkpbt_active_plugin_for_beta_notice'];
+		$current_plugins = $this->get_plugins_slug();
+		$config     = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		if ( ! $config ) {
+			$config = [];
+		}
+
+		foreach ( $current_plugins as $slug ) {
+
+			if ( array_search( $slug, $post ) !== false ) {
+				$config[ $slug ] = true;
+			} else {
+				$config[ $slug ] = false;
+			}
+		}
 		update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
-
-
 	}
 
-	function vgjpm_create_common_form() {
-		$form = '<form method="post" action="">';
+	/**
+	 * @param $_wp_http_referer
+	 *
+	 * @return bool
+	 */
+	function isFromCheckbox( $_wp_http_referer ) {
+
+		if ( strpos( $_wp_http_referer, 'checkbox' ) !== false ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function vkpbt_create_common_form() {
+		$form = '<form method="post" action="' . htmlspecialchars( $_SERVER["REQUEST_URI"] ) . '&checkbox">';
 		$form .= wp_nonce_field( 'standing_on_the_shoulder_of_giants', 'vkpbt_nonce' );
 		$form .= '<p>' . __( 'Select plugins to display beta update notices', 'vk-google-job-posting-manager' ) . '</p>';
-		$form .= $this->vgjpm_post_type_check_list();
+		$form .= $this->vkpbt_post_type_check_list();
 		$form .= '<input type="submit" value="' . __( 'Save Changes', 'vk-google-job-posting-manager' ) . '" class="button button-primary">';
 		$form .= '</form>';
 		return $form;
 	}
 
-	function vgjpm_post_type_check_list() {
+	function vkpbt_post_type_check_list() {
 
 		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-
-		var_dump( $config );
 		$list       = '<ul>';
 		foreach ( $config as $slug => $checked_saved ) {
-
-			$checked = ( isset( $checked_saved ) ) ? ' checked' : '';
+			$checked = $checked_saved ? ' checked' : '';
 			$list    .= '<li><label>';
 			$list    .= '<input type="checkbox" name="vkpbt_active_plugin_for_beta_notice[]" value="' . esc_attr( $slug ) . '"' . esc_attr( $checked ) . ' />' . esc_html( $slug );
 			$list    .= '</label></li>';
