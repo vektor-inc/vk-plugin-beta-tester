@@ -143,7 +143,6 @@ class VK_Plugin_Beta_Tester {
 		}
 
 		$versions = $this->versions( $slug );
-
 		if ( $versions && $stable = $versions->stable ) {
 			if ( $stable == $plugin_data['Version'] ) {
 				$plugin_meta[0] .= __( ' (stable)', 'vk-plugin-beta-tester' );
@@ -161,10 +160,12 @@ class VK_Plugin_Beta_Tester {
 	 */
 	function is_slug_allowed_beta_notice( $text_domain ) {
 
-		$this->update_active_plugin_for_beta_notice();
 		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-
-		return $config[ $text_domain ];
+		if ( ! isset( $config[ $text_domain ] ) ) {
+			$config[ $text_domain ] = false;
+		} else {
+			return $config[ $text_domain ];
+		}
 	}
 
 	// UTILITIES:
