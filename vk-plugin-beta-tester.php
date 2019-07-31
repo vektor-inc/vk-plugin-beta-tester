@@ -77,7 +77,7 @@ class VK_Plugin_Beta_Tester {
 				continue;
 			}
 
-			if ( ! $this->is_slug_allowed_beta_notice( $plugin['TextDomain'] ) ) {
+			if ( ! $this->is_slug_allowed_beta_notice( $plugin['slug'] ) ) {
 				continue;
 			}
 
@@ -123,7 +123,7 @@ class VK_Plugin_Beta_Tester {
 
 	function beta_message( $plugin_data, $r ) {
 
-		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
+		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['slug'] ) ) {
 			return;
 		}
 
@@ -134,13 +134,12 @@ class VK_Plugin_Beta_Tester {
 	function meta_filter( $plugin_meta, $plugin_file, $plugin_data, $context ) {
 
 		$slug        = $this->get_plugin_slug( $plugin_file, $plugin_data );
-		$text_domain = $plugin_data['TextDomain'];
 
 		if ( ! $slug ) {
 			return $plugin_meta;
 		}
 
-		if ( ! $this->is_slug_allowed_beta_notice( $text_domain ) ) {
+		if ( ! $this->is_slug_allowed_beta_notice( $slug ) ) {
 			return $plugin_meta;
 		}
 
@@ -156,17 +155,17 @@ class VK_Plugin_Beta_Tester {
 	}
 
 	/**
-	 * @param $text_domain
+	 * @param $slug
 	 *
 	 * @return Boolean
 	 */
-	function is_slug_allowed_beta_notice( $text_domain ) {
+	function is_slug_allowed_beta_notice( $slug ) {
 
 		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-		if ( ! isset( $config[ $text_domain ] ) ) {
-			$config[ $text_domain ] = false;
+		if ( ! isset( $config[ $slug ] ) ) {
+			$config[ $slug ] = false;
 		} else {
-			return $config[ $text_domain ];
+			return $config[ $slug ];
 		}
 	}
 
@@ -279,7 +278,7 @@ class VK_Plugin_Beta_Tester {
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 
-		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
+		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['slug'] ) ) {
 			return $plugin_meta;
 		}
 
@@ -339,8 +338,6 @@ class VK_Plugin_Beta_Tester {
 		$config       = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 		$config_key   = array_keys( $config );
 		$plugins_slug = $this->get_plugins_slug();
-		var_dump($plugins_slug);
-
 		$update       = [];
 
 		foreach ( $plugins_slug as $slug ) {
@@ -352,7 +349,6 @@ class VK_Plugin_Beta_Tester {
 			}
 		}
 
-		var_dump($update);
 		update_option( 'vkpbt_active_plugin_for_beta_notice', $update );
 	}
 
