@@ -265,7 +265,6 @@ class VK_Plugin_Beta_Tester {
 		delete_site_transient( 'update_plugins' ); // force an update
 		VK_Plugin_Beta_Tester::reset_custom_site_transient();
 		wp_update_plugins();
-		wp_die();
 	}
 
 	static function reset_custom_site_transient() {
@@ -375,8 +374,9 @@ class VK_Plugin_Beta_Tester {
 		$plugin_array = get_plugins();
 
 		// First check if we have plugins, else return false
-		if ( empty( $plugin_array ) )
+		if ( empty( $plugin_array ) ){
 			return false;
+		}
 
 		// Define our variable as an empty array to avoid bugs if $plugin_array is empty
 		$slugs = [];
@@ -396,41 +396,41 @@ class VK_Plugin_Beta_Tester {
 	function vkpbt_save_data() {
 
 		// nonce
-		if ( ! isset( $_POST['vkpbt_nonce'] ) ) {
-			return false;
-		}
-		if ( ! wp_verify_nonce( $_POST['vkpbt_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
-			return false;
-		}
+		if ( isset( $_POST['vkpbt_nonce'] ) ) {
 
-		$isData = array_key_exists( 'vkpbt_active_plugin_for_beta_notice', $_POST );
-		if ( ! $isData ) {
-			$post = [];
-		} else {
-			$post = $_POST['vkpbt_active_plugin_for_beta_notice'];
-
-		}
-
-		$current_plugins = $this->get_plugins_slug();
-		$config          = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
-		if ( ! $config ) {
-			$config = [];
-		}
-
-		foreach ( $current_plugins as $slug ) {
-
-			if ( array_search( $slug, $post ) !== false ) {
-				$config[ $slug ] = true;
-			} else {
-				$config[ $slug ] = false;
+			if ( ! wp_verify_nonce( $_POST['vkpbt_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
+				return false;
 			}
+
+			$isData = array_key_exists( 'vkpbt_active_plugin_for_beta_notice', $_POST );
+			if ( ! $isData ) {
+				$post = [];
+			} else {
+				$post = $_POST['vkpbt_active_plugin_for_beta_notice'];
+
+			}
+
+			$current_plugins = $this->get_plugins_slug();
+			$config          = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
+			if ( ! $config ) {
+				$config = [];
+			}
+
+			foreach ( $current_plugins as $slug ) {
+
+				if ( array_search( $slug, $post ) !== false ) {
+					$config[ $slug ] = true;
+				} else {
+					$config[ $slug ] = false;
+				}
+			}
+			update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
+			$this->check_update_manually();
 		}
-		update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
-		$this->check_update_manually();
 	}
 
 	function vkpbt_create_common_form() {
-		$form = '<form method="post" action="' . htmlspecialchars( $_SERVER["REQUEST_URI"] ) . '&checkbox">';
+		$form = '<form method="post" action="' . htmlspecialchars( $_SERVER["REQUEST_URI"] ) . '">';
 		$form .= wp_nonce_field( 'standing_on_the_shoulder_of_giants', 'vkpbt_nonce' );
 		$form .= '<p>' . __( 'Select plugins to display beta update notices', 'vk-google-job-posting-manager' ) . '</p>';
 		$form .= $this->vkpbt_post_type_check_list();
@@ -450,7 +450,6 @@ class VK_Plugin_Beta_Tester {
 			$list    .= '</label></li>';
 		}
 		$list .= '</ul>';
-
 		return $list;
 	}
 }
