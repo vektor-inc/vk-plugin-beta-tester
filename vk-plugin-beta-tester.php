@@ -68,7 +68,10 @@ class VK_Plugin_Beta_Tester {
 
 	// This is where the magic happens.
 	private function upgradable( $wpapi_response = array() ) {
+
 		$plugins  = get_plugins();
+
+		//このforeachをupgradeの時以外は回さない
 		$upgrades = array();
 		foreach ( $plugins as $file => $plugin ) {
 			$slug = $this->get_plugin_slug( $file, $plugin );
@@ -95,7 +98,6 @@ class VK_Plugin_Beta_Tester {
 				}
 			}
 		}
-
 		return $upgrades;
 	}
 
