@@ -110,6 +110,7 @@ class VK_Plugin_Beta_Tester {
 	// UI FUNCTIONS:
 	// The following functions add some information to the plugins page
 	function register_messages() {
+
 		$transient = get_site_transient( 'update_plugins' );
 		if ( ! isset( $transient->response ) ) {
 			return;
@@ -119,6 +120,7 @@ class VK_Plugin_Beta_Tester {
 			add_action( "in_plugin_update_message-$file", array( $this, 'beta_message' ), 10, 2 );
 		}
 	}
+
 	function beta_message( $plugin_data, $r ) {
 
 		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
@@ -337,6 +339,8 @@ class VK_Plugin_Beta_Tester {
 		$config       = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 		$config_key   = array_keys( $config );
 		$plugins_slug = $this->get_plugins_slug();
+		var_dump($plugins_slug);
+
 		$update       = [];
 
 		foreach ( $plugins_slug as $slug ) {
@@ -347,6 +351,8 @@ class VK_Plugin_Beta_Tester {
 				$update[ $slug ] = false;
 			}
 		}
+
+		var_dump($update);
 		update_option( 'vkpbt_active_plugin_for_beta_notice', $update );
 	}
 
@@ -370,8 +376,22 @@ class VK_Plugin_Beta_Tester {
 	 * @return array
 	 */
 	function get_plugins_slug() {
-		$all_plugins_data = get_plugins();
-		return array_column( array_values( $all_plugins_data ), 'TextDomain' );
+		$plugin_array = get_plugins();
+
+		// First check if we have plugins, else return false
+		if ( empty( $plugin_array ) )
+			return false;
+
+		// Define our variable as an empty array to avoid bugs if $plugin_array is empty
+		$slugs = [];
+
+		foreach ( $plugin_array as $plugin_slug=>$values ){
+			$slugs[] = basename(
+				$plugin_slug, // Get the key which holds the folder/file name
+				'.php' // Strip away the .php part
+			);
+		}
+		return $slugs;
 	}
 
 	/**
@@ -381,7 +401,7 @@ class VK_Plugin_Beta_Tester {
 
 		// nonce
 		if ( ! isset( $_POST['vkpbt_nonce'] ) ) {
-			return;
+			return false;
 		}
 		if ( ! wp_verify_nonce( $_POST['vkpbt_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
 			return false;
