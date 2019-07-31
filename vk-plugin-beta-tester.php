@@ -77,7 +77,7 @@ class VK_Plugin_Beta_Tester {
 				continue;
 			}
 
-			if ( ! $this->is_slug_allowed_beta_notice( $plugin['slug'] ) ) {
+			if ( ! $this->is_slug_allowed_beta_notice( $slug ) ) {
 				continue;
 			}
 
@@ -278,7 +278,7 @@ class VK_Plugin_Beta_Tester {
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 
-		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['slug'] ) ) {
+		if ( ! array_key_exists( 'slug', $plugin_data ) || ! $this->is_slug_allowed_beta_notice( $plugin_data['slug'] ) ) {
 			return $plugin_meta;
 		}
 
