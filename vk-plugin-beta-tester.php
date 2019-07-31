@@ -384,20 +384,22 @@ class VK_Plugin_Beta_Tester {
 			return;
 		}
 		if ( ! wp_verify_nonce( $_POST['vkpbt_nonce'], 'standing_on_the_shoulder_of_giants' ) ) {
-			return;
+			return false;
 		}
 
-		if ( ! isset( $_POST['vkpbt_active_plugin_for_beta_notice'] ) ) {
+		$isData = array_key_exists( 'vkpbt_active_plugin_for_beta_notice', $_POST );
+		if ( ! $isData ) {
+			$post = [];
+		} else {
+			$post = $_POST['vkpbt_active_plugin_for_beta_notice'];
 
-			//Check the data is from checkbox form or not.
-			if ( $this->isFromCheckbox( $_POST['_wp_http_referer'] ) ) {
-				$_POST['vkpbt_active_plugin_for_beta_notice'] = [];
-			} else {
-				return;
-			}
 		}
 
-		$post            = $_POST['vkpbt_active_plugin_for_beta_notice'];
+		//Check the data is from checkbox form or not.
+		if ( ! $this->isFromCheckbox( $_POST['_wp_http_referer'] ) ) {
+			return false;
+		}
+
 		$current_plugins = $this->get_plugins_slug();
 		$config     = get_option( 'vkpbt_active_plugin_for_beta_notice' );
 		if ( ! $config ) {
