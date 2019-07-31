@@ -117,15 +117,15 @@ class VK_Plugin_Beta_Tester {
 		}
 
 		foreach ( $transient->response as $file => $plugin ) {
+
+			if ( ! $this->is_slug_allowed_beta_notice( $plugin->slug ) ) {
+				return;
+			}
 			add_action( "in_plugin_update_message-$file", array( $this, 'beta_message' ), 10, 2 );
 		}
 	}
 
 	function beta_message( $plugin_data, $r ) {
-
-		if ( ! $this->is_slug_allowed_beta_notice( $plugin_data['slug'] ) ) {
-			return;
-		}
 
 		if ( $this->version_compare( $r->new_version, $r->stable_version ) ) {
 			echo ' <span style="color:red;">' . sprintf( __( 'Please note that version %s is a beta.', 'vk-plugin-beta-tester' ), $r->new_version ) . '</span> ' . sprintf( __( 'The latest stable version is %s.', 'vk-plugin-beta-tester' ), $r->stable_version );
@@ -161,7 +161,7 @@ class VK_Plugin_Beta_Tester {
 	 */
 	function is_slug_allowed_beta_notice( $slug ) {
 
-		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$config = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
 		if ( ! isset( $config[ $slug ] ) ) {
 			$config[ $slug ] = false;
 		} else {
@@ -335,7 +335,7 @@ class VK_Plugin_Beta_Tester {
 
 	function update_active_plugin_for_beta_notice() {
 
-		$config       = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$config       = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
 		$config_key   = array_keys( $config );
 		$plugins_slug = $this->get_plugins_slug();
 		$update       = [];
@@ -411,13 +411,8 @@ class VK_Plugin_Beta_Tester {
 
 		}
 
-		//Check the data is from checkbox form or not.
-		if ( ! $this->isFromCheckbox( $_POST['_wp_http_referer'] ) ) {
-			return false;
-		}
-
 		$current_plugins = $this->get_plugins_slug();
-		$config     = get_option( 'vkpbt_active_plugin_for_beta_notice' );
+		$config          = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
 		if ( ! $config ) {
 			$config = [];
 		}
@@ -431,20 +426,7 @@ class VK_Plugin_Beta_Tester {
 			}
 		}
 		update_option( 'vkpbt_active_plugin_for_beta_notice', $config );
-	}
-
-	/**
-	 * @param $_wp_http_referer
-	 *
-	 * @return bool
-	 */
-	function isFromCheckbox( $_wp_http_referer ) {
-
-		if ( strpos( $_wp_http_referer, 'checkbox' ) !== false ) {
-			return true;
-		} else {
-			return false;
-		}
+		$this->check_update_manually();
 	}
 
 	function vkpbt_create_common_form() {
@@ -459,8 +441,8 @@ class VK_Plugin_Beta_Tester {
 
 	function vkpbt_post_type_check_list() {
 
-		$config = get_option( 'vkpbt_active_plugin_for_beta_notice' );
-		$list       = '<ul>';
+		$config = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
+		$list   = '<ul>';
 		foreach ( $config as $slug => $checked_saved ) {
 			$checked = $checked_saved ? ' checked' : '';
 			$list    .= '<li><label>';
