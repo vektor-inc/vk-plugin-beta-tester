@@ -14,6 +14,9 @@ define( 'PLUGIN_BETA_TESTER_VERSION', '0.5' );
 if ( ! defined( 'PLUGIN_BETA_TESTER_EXPIRATION' ) ) {
 	define( 'PLUGIN_BETA_TESTER_EXPIRATION', 60 * 60 * 24 );
 }
+
+define( 'VK_PLUGIN_BETA_TESTER_BASENAME', plugin_basename( __FILE__ ) );
+
 require_once dirname( __FILE__ ) . '/inc/vk-admin/vk-admin-config.php';
 
 class VK_Plugin_Beta_Tester {
@@ -38,7 +41,18 @@ class VK_Plugin_Beta_Tester {
 
 		add_action( 'admin_menu', array( $this, 'add_main_setting' ), 10, 0 );
 
+		add_filter( 'plugin_action_links_' . VK_PLUGIN_BETA_TESTER_BASENAME, array( $this, 'add_setting_link' ), 10, 1 );
+
 	}
+
+
+	function add_setting_link( $links ) {
+		$settings_link = '<a href="' . esc_url( admin_url( '/options-general.php?page=vk-plugin-beta-tester-setting' ) ) . '">' . __( 'Setting', 'vk-plugin-beta-tester' ) . '</a>';
+		array_unshift( $links, $settings_link );
+		return $links;
+	}
+
+
 
 	function reset_transient() {
 		delete_site_transient( 'update_plugins' ); // force an update
@@ -245,7 +259,7 @@ class VK_Plugin_Beta_Tester {
 
 	function insert_update_check_javascript() {
 
-		$new_content = '<script type="text/javascript">';
+		$new_content  = '<script type="text/javascript">';
 		$new_content .= 'function checkPluginUpdate(){';
 		$new_content .= 'jQuery(document).ready(function($) {';
 		$new_content .= 'var data = {';
@@ -317,10 +331,12 @@ class VK_Plugin_Beta_Tester {
 		$get_logo_html  = '';
 		$get_menu_html  = '<li><a href="#beta-update-notice-setting">' . __( 'Beta Update Notice Setting', 'vk-plugin-beta-tester' ) . '</a></li>';
 
-		Vk_Admin::admin_page_frame( $get_page_title, array(
-			$this,
-			'vkpbt_the_admin_body'
-		), $get_logo_html, $get_menu_html );
+		Vk_Admin::admin_page_frame(
+			$get_page_title, array(
+				$this,
+				'vkpbt_the_admin_body',
+			), $get_logo_html, $get_menu_html
+		);
 	}
 
 
@@ -374,14 +390,14 @@ class VK_Plugin_Beta_Tester {
 		$plugin_array = get_plugins();
 
 		// First check if we have plugins, else return false
-		if ( empty( $plugin_array ) ){
+		if ( empty( $plugin_array ) ) {
 			return false;
 		}
 
 		// Define our variable as an empty array to avoid bugs if $plugin_array is empty
 		$slugs = [];
 
-		foreach ( $plugin_array as $plugin_slug=>$values ){
+		foreach ( $plugin_array as $plugin_slug => $values ) {
 			$slugs[] = basename(
 				$plugin_slug, // Get the key which holds the folder/file name
 				'.php' // Strip away the .php part
@@ -430,7 +446,7 @@ class VK_Plugin_Beta_Tester {
 	}
 
 	function vkpbt_create_common_form() {
-		$form = '<form method="post" action="' . htmlspecialchars( $_SERVER["REQUEST_URI"] ) . '">';
+		$form  = '<form method="post" action="' . htmlspecialchars( $_SERVER['REQUEST_URI'] ) . '">';
 		$form .= wp_nonce_field( 'standing_on_the_shoulder_of_giants', 'vkpbt_nonce' );
 		$form .= '<p>' . __( 'Select plugins to display beta update notices', 'vk-google-job-posting-manager' ) . '</p>';
 		$form .= $this->vkpbt_post_type_check_list();
@@ -445,9 +461,9 @@ class VK_Plugin_Beta_Tester {
 		$list   = '<ul>';
 		foreach ( $config as $slug => $checked_saved ) {
 			$checked = $checked_saved ? ' checked' : '';
-			$list    .= '<li><label>';
-			$list    .= '<input type="checkbox" name="vkpbt_active_plugin_for_beta_notice[]" value="' . esc_attr( $slug ) . '"' . esc_attr( $checked ) . ' />' . esc_html( $slug );
-			$list    .= '</label></li>';
+			$list   .= '<li><label>';
+			$list   .= '<input type="checkbox" name="vkpbt_active_plugin_for_beta_notice[]" value="' . esc_attr( $slug ) . '"' . esc_attr( $checked ) . ' />' . esc_html( $slug );
+			$list   .= '</label></li>';
 		}
 		$list .= '</ul>';
 		return $list;
