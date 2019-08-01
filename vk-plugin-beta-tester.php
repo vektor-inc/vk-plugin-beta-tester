@@ -72,15 +72,19 @@ class VK_Plugin_Beta_Tester {
 		$plugins  = get_plugins();
 
 		//このforeachをupgradeの時以外は回さない
+		var_dump( $wpapi_response );
+
 		$upgrades = array();
 		foreach ( $plugins as $file => $plugin ) {
-			$slug = $this->get_plugin_slug( $file, $plugin );
+			$slug        = $this->get_plugin_slug( $file, $plugin );
+			$text_domain = $plugin['TextDomain'];
+
 
 			if ( ! $slug ) {
 				continue;
 			}
 
-			if ( ! $this->is_slug_allowed_beta_notice( $slug ) ) {
+			if ( ! $this->is_slug_allowed_beta_notice( $text_domain ) ) {
 				continue;
 			}
 
@@ -119,10 +123,6 @@ class VK_Plugin_Beta_Tester {
 		}
 
 		foreach ( $transient->response as $file => $plugin ) {
-
-			if ( ! $this->is_slug_allowed_beta_notice( $plugin->slug ) ) {
-				return;
-			}
 			add_action( "in_plugin_update_message-$file", array( $this, 'beta_message' ), 10, 2 );
 		}
 	}
@@ -136,12 +136,13 @@ class VK_Plugin_Beta_Tester {
 	function meta_filter( $plugin_meta, $plugin_file, $plugin_data, $context ) {
 
 		$slug        = $this->get_plugin_slug( $plugin_file, $plugin_data );
+		$text_domain = $plugin_data['TextDomain'];
 
 		if ( ! $slug ) {
 			return $plugin_meta;
 		}
 
-		if ( ! $this->is_slug_allowed_beta_notice( $slug ) ) {
+		if ( ! $this->is_slug_allowed_beta_notice( $text_domain ) ) {
 			return $plugin_meta;
 		}
 
@@ -157,17 +158,17 @@ class VK_Plugin_Beta_Tester {
 	}
 
 	/**
-	 * @param $slug
+	 * @param $text_domain
 	 *
 	 * @return Boolean
 	 */
-	function is_slug_allowed_beta_notice( $slug ) {
+	function is_slug_allowed_beta_notice( $text_domain ) {
 
 		$config = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
-		if ( ! isset( $config[ $slug ] ) ) {
-			$config[ $slug ] = false;
+		if ( ! isset( $config[ $text_domain ] ) ) {
+			$config[ $text_domain ] = false;
 		} else {
-			return $config[ $slug ];
+			return $config[ $text_domain ];
 		}
 	}
 
@@ -279,7 +280,7 @@ class VK_Plugin_Beta_Tester {
 
 	function add_update_link_to_plugins_row( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 
-		if ( ! array_key_exists( 'slug', $plugin_data ) || ! $this->is_slug_allowed_beta_notice( $plugin_data['slug'] ) ) {
+		if ( ! array_key_exists( 'slug', $plugin_data ) || ! $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
 			return $plugin_meta;
 		}
 
