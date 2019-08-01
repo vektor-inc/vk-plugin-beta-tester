@@ -56,6 +56,7 @@ class VK_Plugin_Beta_Tester {
 		// For WordPress 3.7 and later:
 		// http://make.wordpress.org/core/2013/10/25/json-encoding-ssl-api-wordpress-3-7/
 		if ( $url == 'https://api.wordpress.org/plugins/update-check/1.1/' ) {
+
 			$wpapi_response          = json_decode( $response['body'] );
 			$override                = (object) $this->upgradable( $wpapi_response->plugins );
 			$wpapi_response->plugins = $override;
@@ -70,12 +71,10 @@ class VK_Plugin_Beta_Tester {
 	private function upgradable( $wpapi_response = array() ) {
 
 		$plugins  = get_plugins();
-
 		$upgrades = array();
 		foreach ( $plugins as $file => $plugin ) {
 			$slug        = $this->get_plugin_slug( $file, $plugin );
 			$text_domain = $plugin['TextDomain'];
-
 
 			if ( ! $slug ) {
 				continue;
@@ -87,13 +86,14 @@ class VK_Plugin_Beta_Tester {
 
 			$versions = $this->versions( $slug );
 			if ( $versions && $this->version_compare( $versions->latest, $plugin['Version'] ) ) {
-
 				$upgrades[ $file ]                 = new stdClass;
 				$upgrades[ $file ]->slug           = $slug;
+				$upgrades[ $file ]->plugin         = $file;
 				$upgrades[ $file ]->stable_version = $versions->stable;
 				$upgrades[ $file ]->new_version    = $versions->latest;
 				$upgrades[ $file ]->url            = "http://wordpress.org/extend/plugins/$slug/";
 				$upgrades[ $file ]->package        = "http://downloads.wordpress.org/plugin/$slug.{$versions->latest}.zip";
+
 				if ( $this->version_compare( $versions->latest, $upgrades[ $file ]->stable_version ) ) {
 					$upgrades[ $file ]->upgrade_notice = ' <strong>' . __( 'This release is a beta.', 'vk-plugin-beta-tester' ) . '</strong>';
 				}
