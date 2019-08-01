@@ -71,9 +71,6 @@ class VK_Plugin_Beta_Tester {
 
 		$plugins  = get_plugins();
 
-		//このforeachをupgradeの時以外は回さない
-		var_dump( $wpapi_response );
-
 		$upgrades = array();
 		foreach ( $plugins as $file => $plugin ) {
 			$slug        = $this->get_plugin_slug( $file, $plugin );
