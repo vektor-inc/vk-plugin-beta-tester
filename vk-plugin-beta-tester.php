@@ -336,7 +336,7 @@ class VK_Plugin_Beta_Tester {
 
 		$config       = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
 		$config_key   = array_keys( $config );
-		$plugins_slug = $this->get_plugins_slug();
+		$plugins_slug = $this->get_plugins_text_domain();
 		$update       = [];
 
 		foreach ( $plugins_slug as $slug ) {
@@ -358,7 +358,7 @@ class VK_Plugin_Beta_Tester {
 	function set_default_active_plugin_for_beta_notice() {
 
 		$default      = [];
-		$plugins_slug = $this->get_plugins_slug();
+		$plugins_slug = $this->get_plugins_text_domain();
 		foreach ( $plugins_slug as $slug ) {
 			$default[ $slug ] = false;
 		}
@@ -367,10 +367,10 @@ class VK_Plugin_Beta_Tester {
 	}
 
 	/**
-	 * Get plugins slug.
+	 * Get plugins TextDomain.
 	 * @return array
 	 */
-	function get_plugins_slug() {
+	function get_plugins_text_domain() {
 		$plugin_array = get_plugins();
 
 		// First check if we have plugins, else return false
@@ -379,15 +379,14 @@ class VK_Plugin_Beta_Tester {
 		}
 
 		// Define our variable as an empty array to avoid bugs if $plugin_array is empty
-		$slugs = [];
+		$text_domain = [];
 
-		foreach ( $plugin_array as $plugin_slug=>$values ){
-			$slugs[] = basename(
-				$plugin_slug, // Get the key which holds the folder/file name
-				'.php' // Strip away the .php part
-			);
+		foreach ( $plugin_array as $plugin_data => $values ) {
+
+			array_push( $text_domain, $values['TextDomain'] );
 		}
-		return $slugs;
+
+		return $text_domain;
 	}
 
 	/**
@@ -410,7 +409,7 @@ class VK_Plugin_Beta_Tester {
 
 			}
 
-			$current_plugins = $this->get_plugins_slug();
+			$current_plugins = $this->get_plugins_text_domain();
 			$config          = get_option( 'vkpbt_active_plugin_for_beta_notice', [] );
 			if ( ! $config ) {
 				$config = [];
