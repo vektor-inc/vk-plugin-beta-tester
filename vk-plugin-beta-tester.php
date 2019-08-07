@@ -120,14 +120,6 @@ class VK_Plugin_Beta_Tester {
 		return $upgrades;
 	}
 
-	function format_key_value_to_index( $return, $target ) {
-		foreach ( $target as $value ) {
-			array_push( $return, $value );
-		}
-
-		return $return;
-	}
-
 	function version_compare( $a, $b ) {
 		// remove unnecessary whitespace and lowercase all the things
 		$a = trim( preg_replace( array( '!(\d)\s(\D)!', '!(\D)\s(\d)!' ), '\1\2', strtolower( $a ) ) );
