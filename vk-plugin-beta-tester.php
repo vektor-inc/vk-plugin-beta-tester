@@ -95,25 +95,37 @@ class VK_Plugin_Beta_Tester {
 			}
 
 			if ( ! $this->is_slug_allowed_beta_notice( $text_domain ) ) {
-				continue;
-			}
 
-			$versions = $this->versions( $slug );
-			if ( $versions && $this->version_compare( $versions->latest, $plugin['Version'] ) ) {
-				$upgrades[ $file ]                 = new stdClass;
-				$upgrades[ $file ]->slug           = $slug;
-				$upgrades[ $file ]->plugin         = $file;
-				$upgrades[ $file ]->stable_version = $versions->stable;
-				$upgrades[ $file ]->new_version    = $versions->latest;
-				$upgrades[ $file ]->url            = "http://wordpress.org/extend/plugins/$slug/";
-				$upgrades[ $file ]->package        = "http://downloads.wordpress.org/plugin/$slug.{$versions->latest}.zip";
+				if ( isset( $wpapi_response->$file ) ) {
+					$upgrades[ $file ] = $wpapi_response->$file;
+				}
+			} else {
 
-				if ( $this->version_compare( $versions->latest, $upgrades[ $file ]->stable_version ) ) {
-					$upgrades[ $file ]->upgrade_notice = ' <strong>' . __( 'This release is a beta.', 'vk-plugin-beta-tester' ) . '</strong>';
+				$versions = $this->versions( $slug );
+				if ( $versions && $this->version_compare( $versions->latest, $plugin['Version'] ) ) {
+					$upgrades[ $file ]                 = new stdClass;
+					$upgrades[ $file ]->slug           = $slug;
+					$upgrades[ $file ]->plugin         = $file;
+					$upgrades[ $file ]->stable_version = $versions->stable;
+					$upgrades[ $file ]->new_version    = $versions->latest;
+					$upgrades[ $file ]->url            = "http://wordpress.org/extend/plugins/$slug/";
+					$upgrades[ $file ]->package        = "http://downloads.wordpress.org/plugin/$slug.{$versions->latest}.zip";
+
+					if ( $this->version_compare( $versions->latest, $upgrades[ $file ]->stable_version ) ) {
+						$upgrades[ $file ]->upgrade_notice = ' <strong>' . __( 'This release is a beta.', 'vk-plugin-beta-tester' ) . '</strong>';
+					}
 				}
 			}
 		}
 		return $upgrades;
+	}
+
+	function format_key_value_to_index( $return, $target ) {
+		foreach ( $target as $value ) {
+			array_push( $return, $value );
+		}
+
+		return $return;
 	}
 
 	function version_compare( $a, $b ) {
@@ -140,8 +152,10 @@ class VK_Plugin_Beta_Tester {
 
 	function beta_message( $plugin_data, $r ) {
 
-		if ( $this->version_compare( $r->new_version, $r->stable_version ) ) {
-			echo ' <span style="color:red;">' . sprintf( __( 'Please note that version %s is a beta.', 'vk-plugin-beta-tester' ), $r->new_version ) . '</span> ' . sprintf( __( 'The latest stable version is %s.', 'vk-plugin-beta-tester' ), $r->stable_version );
+		if ( $this->is_slug_allowed_beta_notice( $plugin_data['TextDomain'] ) ) {
+			if ( $this->version_compare( $r->new_version, $r->stable_version ) ) {
+				echo ' <span style="color:red;">' . sprintf( __( 'Please note that version %s is a beta.', 'vk-plugin-beta-tester' ), $r->new_version ) . '</span> ' . sprintf( __( 'The latest stable version is %s.', 'vk-plugin-beta-tester' ), $r->stable_version );
+			}
 		}
 	}
 	function meta_filter( $plugin_meta, $plugin_file, $plugin_data, $context ) {
