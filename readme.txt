@@ -4,7 +4,7 @@ Donate link:
 Tags: beta, advanced, testing, plugins, plugin
 Tested up to:
 Requires at least:
-Stable Tag: 0.2.1
+Stable Tag: 0.2.2
 Requires PHP: 5.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -23,6 +23,9 @@ VK Plugin Beta Tester is derived from Beta Tester, Copyright mitchoyoshitaka
 Beta Tester is distributed under the terms of the GNU GPL
 
 == Changelog ==
+
+= 0.2.2 =
+* [ bug fix ] stable update fail bug fix.
 
 = 0.2.1 =
 * Setting page CSS tuning
