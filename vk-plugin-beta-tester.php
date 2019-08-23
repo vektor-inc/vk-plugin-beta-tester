@@ -240,29 +240,6 @@ class VK_Plugin_Beta_Tester {
 		return $slug;
 	}
 
-	/*
-	function check_compatibility($slug, $version) {
-		$api = $this->get_api($slug);
-		if ( !$api )
-			return false;
-		$keys = array_keys($api->compatibility);
-		return $api->compatibility[$keys[0]][$version];
-	}
-
-	function get_api($slug) {
-		if ( isset($this->api_cache[$slug]) )
-			return $this->api_cache[$slug];
-
-		include_once ABSPATH . 'wp-admin/includes/plugin-install.php';
-		$api = plugins_api('plugin_information', array('slug' => $slug));
-		if ( is_wp_error($api) )
-			return false;
-
-		$this->api_cache[$slug] = $api;
-		return $api;
-	}
-	*/
-
 	function insert_update_check_javascript() {
 
 		$new_content  = '<script type="text/javascript">';
