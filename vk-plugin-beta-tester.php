@@ -9,7 +9,6 @@
 * Author URI: https://vektor-inc.co.jp
 */
 
-define( 'PLUGIN_FILE', 'vk-plugin-beta-tester/vk-plugin-beta-tester.php' );
 define( 'PLUGIN_BETA_TESTER_VERSION', '0.5' );
 if ( ! defined( 'PLUGIN_BETA_TESTER_EXPIRATION' ) ) {
 	define( 'PLUGIN_BETA_TESTER_EXPIRATION', 60 * 60 * 24 );
@@ -403,10 +402,17 @@ class VK_Plugin_Beta_Tester {
 
 			$isData = array_key_exists( 'vkpbt_active_plugin_for_beta_notice', $_POST );
 			if ( ! $isData ) {
-				$post = [];
+				$sanitized_post = [];
 			} else {
-				$post = $_POST['vkpbt_active_plugin_for_beta_notice'];
 
+				$sanitized_post = [];
+				$post           = isset( $_POST['vkpbt_active_plugin_for_beta_notice'] ) ? wp_unslash( $_POST['vkpbt_active_plugin_for_beta_notice'] ) : [];
+
+				if ( is_array( $post ) ) {
+					foreach ( $post as $value ) {
+						array_push( $sanitized_post, sanitize_text_field( $value ) );
+					}
+				}
 			}
 
 			$current_plugins = $this->get_plugins_text_domain();
@@ -417,7 +423,7 @@ class VK_Plugin_Beta_Tester {
 
 			foreach ( $current_plugins as $slug ) {
 
-				if ( array_search( $slug, $post ) !== false ) {
+				if ( array_search( $slug, $sanitized_post ) !== false ) {
 					$config[ $slug ] = true;
 				} else {
 					$config[ $slug ] = false;
