@@ -95,9 +95,7 @@ class VK_Plugin_Beta_Tester {
 
 			if ( ! $this->is_slug_allowed_beta_notice( $text_domain ) ) {
 
-				if ( isset( $wpapi_response->$file ) ) {
-					$upgrades[ $file ] = $wpapi_response->$file;
-				}
+				$this->return_stable($wpapi_response,$file,$upgrades);
 			} else {
 
 				$versions = $this->versions( $slug );
@@ -113,10 +111,19 @@ class VK_Plugin_Beta_Tester {
 					if ( $this->version_compare( $versions->latest, $upgrades[ $file ]->stable_version ) ) {
 						$upgrades[ $file ]->upgrade_notice = ' <strong>' . __( 'This release is a beta.', 'vk-plugin-beta-tester' ) . '</strong>';
 					}
+				}else{
+
+					$this->return_stable($wpapi_response,$file,$upgrades);
 				}
 			}
 		}
 		return $upgrades;
+	}
+
+	function return_stable($wpapi_response,$file,$upgrades){
+		if ( isset( $wpapi_response->$file ) ) {
+			return $upgrades[ $file ] = $wpapi_response->$file;
+		}
 	}
 
 	function version_compare( $a, $b ) {
