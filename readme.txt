@@ -4,7 +4,7 @@ Donate link:
 Tags: beta, advanced, testing, plugins, plugin
 Tested up to:
 Requires at least:
-Stable Tag: 0.2.3
+Stable Tag: 0.2.4
 Requires PHP: 5.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -30,6 +30,9 @@ Make sure to make frequent backups while you beta test plugins, and make sure to
 
 == Changelog ==
 
+= 0.2.4 =
+[ bug fix ] Don't display update notice
+ 
 = 0.2.3 =
 Merely version change
 
