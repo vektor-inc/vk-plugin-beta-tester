@@ -30,6 +30,9 @@ Make sure to make frequent backups while you beta test plugins, and make sure to
 
 == Changelog ==
 
+= 0.2.6 =
+Merely version change
+
 = 0.2.5 =
 Merely version change
 
