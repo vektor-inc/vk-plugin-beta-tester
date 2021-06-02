@@ -3,7 +3,7 @@
 * Plugin Name: VK Plugin Beta Tester
 * Plugin URI: https://github.com/vektor-inc/vk-plugin-beta-tester
 * Description: Lets you easily beta test plugins by notifying you of beta versions. Also lets you upgrade to beta versions from within WordPress. This plugin
-* Version: 0.2.7
+* Version: 0.2.8
 * Author: Vektor,Inc.
 * Text Domain: vk-plugin-beta-tester
 * Author URI: https://vektor-inc.co.jp
