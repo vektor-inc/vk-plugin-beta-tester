@@ -6,7 +6,6 @@
   "scripts": {
     "update": "ncu -u && npm install",
     "wp-env": "wp-env",
-    "build": "gulp replace_text_domain",
     "dist": "composer install --no-dev && gulp dist && composer install",
     "phpunit": "composer install && wp-env run tests-cli --env-cwd=wp-content/plugins/vk-plugin-beta-tester 'phpunit -c .phpunit.xml --testsuite default --verbose'"
   },
