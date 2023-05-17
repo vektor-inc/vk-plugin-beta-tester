@@ -1,1 +1,0 @@
-{"version":1,"defects":{"SampleTest::test_01":4,"SampleTest::test_02":4,"SampleTest::test_03":4,"Test_PHP_Fatal_Error::test_run_php_fatal_error":4},"times":{"Test_PHP_Fatal_Error::test_run_php_fatal_error":0.547,"SampleTest::test_01":0.002,"SampleTest::test_02":0.001,"SampleTest::test_03":0.001}}
