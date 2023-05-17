@@ -4,11 +4,7 @@
   "description": "=== VK Plugin Beta Tester === Contributors: vektor-inc,kurudrive,naoki0h Donate link: Tags: beta, advanced, testing, plugins, plugin Tested up to: Requires at least: Stable Tag: 0.1.0 Requires PHP: 5.6.0 License: GPLv2 or later License URI: https://www.gnu.org/licenses/gpl-2.0.html",
   "main": "index.js",
   "scripts": {
-    "update": "ncu -u && npm install",
-    "wp-env": "wp-env",
-    "build": "gulp replace_text_domain",
-    "dist": "composer install --no-dev && gulp dist && composer install",
-    "phpunit": "composer install && wp-env run tests-cli --env-cwd=wp-content/plugins/vk-plugin-beta-tester 'phpunit -c .phpunit.xml --testsuite default --verbose'"
+    "build": "gulp replace_text_domain"
   },
   "repository": {
     "type": "git",
@@ -21,10 +17,9 @@
   },
   "homepage": "https://github.com/vektor-inc/vk-plugin-beta-tester#readme",
   "devDependencies": {
-    "@wordpress/env": "^7.0.0",
     "gulp": "^4.0.2",
-    "gulp-replace": "^1.1.4",
-    "npm-check-updates": "^16.10.12",
+    "gulp-replace": "^1.0.0",
+    "npm-check-updates": "^11.3.0",
     "run-sequence": "^2.2.1"
   }
 }
