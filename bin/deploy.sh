@@ -2,9 +2,9 @@
 
 set -ex
 
-PLUGIN_NAME='vk-filter-search'
+PLUGIN_NAME='vk-plugin-beta-tester'
 PLUGIN_DIR=$(cd $(dirname $(dirname $0)); pwd)
-CURRENT_VERSION=$(cat "${PLUGIN_DIR}/vk-filter-search.php"|grep -i 'version *:'|head -n 1|sed -E 's/^[ *]*Version: *([^ ]*) *$/\1/i')
+CURRENT_VERSION=$(cat "${PLUGIN_DIR}/vk-plugin-beta-tester.php"|grep -i 'version *:'|head -n 1|sed -E 's/^[ *]*Version: *([^ ]*) *$/\1/i')
 
 dist_dir="${PLUGIN_DIR}/dist"
 src_dir="${dist_dir}/${PLUGIN_NAME}"

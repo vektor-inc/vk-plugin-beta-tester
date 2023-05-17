@@ -2,7 +2,7 @@
 
 set -ex
 
-PLUGIN_NAME='vk-filter-search'
+PLUGIN_NAME='vk-plugin-beta-tester'
 PLUGIN_DIR=$(cd $(dirname $(dirname $0)); pwd)
 
 dist_dir="${PLUGIN_DIR}/dist"
