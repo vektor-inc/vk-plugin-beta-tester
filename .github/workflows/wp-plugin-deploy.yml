@@ -81,7 +81,7 @@ jobs:
           env:
               SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
               SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-              SLUG: vk-filter-search
+              SLUG: ${{ env.plugin_name }}
   release:
     name: release
     runs-on: ubuntu-latest
