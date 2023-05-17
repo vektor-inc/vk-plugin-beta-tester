@@ -8,7 +8,7 @@
 * Text Domain: vk-plugin-beta-tester
 * Author URI: https://vektor-inc.co.jp
 */
-
+require_once dirname( __FILE__ ) . '/vendor/autoload.php';
 define( 'PLUGIN_BETA_TESTER_VERSION', '0.5' );
 if ( ! defined( 'PLUGIN_BETA_TESTER_EXPIRATION' ) ) {
 	define( 'PLUGIN_BETA_TESTER_EXPIRATION', 60 * 60 * 24 );
@@ -16,7 +16,8 @@ if ( ! defined( 'PLUGIN_BETA_TESTER_EXPIRATION' ) ) {
 
 define( 'VK_PLUGIN_BETA_TESTER_BASENAME', plugin_basename( __FILE__ ) );
 
-require_once dirname( __FILE__ ) . '/inc/vk-admin/vk-admin-config.php';
+use VektorInc\VK_Admin\VkAdmin;
+VkAdmin::init();
 
 class VK_Plugin_Beta_Tester {
 	private $api_cache = array();
@@ -320,7 +321,7 @@ class VK_Plugin_Beta_Tester {
 		$get_logo_html  = '';
 		$get_menu_html  = '<li><a href="#beta-update-notice-setting">' . __( 'Beta Update Notice Setting', 'vk-plugin-beta-tester' ) . '</a></li>';
 
-		Vk_Admin::admin_page_frame(
+		VkAdmin::admin_page_frame(
 			$get_page_title, array(
 				$this,
 				'vkpbt_the_admin_body',
